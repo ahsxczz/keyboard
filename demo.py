@@ -206,7 +206,6 @@ def onKeyboardEvent(event):
 		return True
 	
 def update_unhook():
-	#x=find_handler('Untitled - Notepad')
 	x=find_handler('系列番号輸入')
 	y=find_handler('分組輸入系列番号')
 	if x==get_foreground_window():
@@ -217,6 +216,18 @@ def update_unhook():
 		hm.HookKeyboard()
 	root.after(1000,update_unhook)
 
+def update_hook():
+	#x=find_handler('Untitled - Notepad')
+	enable_handler(529250,False)#属性
+	enable_handler(2036414,False)#+%
+	enable_handler(2429686,False)#-%
+	enable_handler(2036458,False)#读入值
+	enable_handler(1577744,False)#测定范围
+	enable_handler(398180,False)#测定模式
+	enable_handler(332698,False)#功能
+	#enable_handler(x,False)
+	root.after(1000,update_hook)
+	
 def close_taskmanager():
 	x=find_handler('Windows Task Manager')
 	if x==get_foreground_window():
@@ -244,6 +255,7 @@ if __name__ == '__main__':
 	entry.focus()
 	button = Button(root, text='Quit', command=on_exit).pack()
 	update_unhook()
+	update_hook()
 	close_taskmanager()
 	root.mainloop()  #消息循环
 	
