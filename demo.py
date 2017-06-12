@@ -208,7 +208,10 @@ def onKeyboardEvent(event):
 def update_unhook():
 	#x=find_handler('Untitled - Notepad')
 	x=find_handler('系列番号輸入')
+	y=find_handler('分組輸入系列番号')
 	if x==get_foreground_window():
+		hm.UnhookKeyboard()
+	elif y==get_foreground_window():
 		hm.UnhookKeyboard()
 	else:
 		hm.HookKeyboard()
