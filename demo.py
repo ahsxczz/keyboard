@@ -7,6 +7,7 @@ import os
 from Tkinter import Tk, Label, Entry, StringVar, Button
 import pythoncom
 import pyHook
+import psutil
 import ctypes
 import win32gui
 import win32api
@@ -196,6 +197,24 @@ def is_enabled(hwnd):
 
 def SetAsForegroundWindow(hwnd):
 	win32gui.SetForegroundWindow(hwnd)
+
+def get_processes(name=None, attrs=['pid', 'name']):
+    processes = []
+    for proc in psutil.process_iter():
+        try:
+            pinfo = proc.as_dict(attrs=attrs)
+        except psutil.NoSuchProcess:
+            pass
+        else:
+            if name:
+                if pinfo['name'] == name:
+                    processes.append(pinfo)
+
+                continue
+
+            processes.append(pinfo)
+
+    return processes	
 	
 def onKeyboardEvent(event):
     # password should be in Y, 3, 0 , + , - ,=
@@ -217,7 +236,6 @@ def update_unhook():
 	root.after(1000,update_unhook)
 
 def update_hook():
-	#x=find_handler('Untitled - Notepad')
 	enable_handler(529250,False)#属性
 	enable_handler(2036414,False)#+%
 	enable_handler(2429686,False)#-%
@@ -225,12 +243,10 @@ def update_hook():
 	enable_handler(1577744,False)#测定范围
 	enable_handler(398180,False)#测定模式
 	enable_handler(332698,False)#功能
-	#enable_handler(x,False)
 	root.after(1000,update_hook)
 	
 def close_taskmanager():
-	x=find_handler('Windows Task Manager')
-	if x==get_foreground_window():
+	if get_processes('taskmgr.exe'):
 		os.system('taskkill /f /im taskmgr.exe')
 	root.after(1000,close_taskmanager)
 		
