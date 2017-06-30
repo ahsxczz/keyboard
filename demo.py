@@ -26,6 +26,7 @@ IsWindowVisible = ctypes.windll.user32.IsWindowVisible
 SetWindowText = ctypes.windll.user32.SetWindowTextA
 SetCursorPos = ctypes.windll.user32.SetCursorPos
 
+keystr=0
 PASSWORD = '330033'
 
 def on_exit():
@@ -36,6 +37,14 @@ def on_exit():
         sys.exit(1)
     else:
         text.set('')
+		
+def on_click():
+	global keystr
+	if text.get() == PASSWORD:
+		if keystr==0:
+			keystr=1
+		else:
+			keystr=0
 		
 def get_child(parent=0, child=None, cls_name=None, window_name=None):
     return win32gui.FindWindowEx(parent, child, cls_name, window_name)
@@ -236,13 +245,48 @@ def update_unhook():
 	root.after(1000,update_unhook)
 
 def update_hook():
-	enable_handler(529250,False)#属性
-	enable_handler(2036414,False)#+%
-	enable_handler(2429686,False)#-%
-	enable_handler(2036458,False)#读入值
-	enable_handler(1577744,False)#测定范围
-	enable_handler(398180,False)#测定模式
-	enable_handler(332698,False)#功能
+	#x=find_handler('Spy++')
+	#x1=(get_child(parent=x,window_name='Spy++'))
+	#x2=(get_child(parent=x1,window_name=''))
+	#a=(get_child(parent=x2,window_name=''))
+	#b=(get_child(parent=a))
+	#c=(get_child(parent=a,child=b))
+	#d=(get_child(parent=c))
+	#e=(get_child(parent=d,window_name='Tree View'))
+	a=find_handler('')
+	b1=(get_child(parent=a,window_name=''))
+	b2=(get_child(parent=a,child=b1))
+	c1=(get_child(parent=b2))
+	d1=(get_child(parent=c1))
+	d2=(get_child(parent=c1,child=d1))
+	e1=(get_child(parent=d2))
+	f1=(get_child(parent=e1))
+	g1=(get_child(parent=f1,window_name='20'))
+	g2=(get_child(parent=f1,child=g1))
+	g3=(get_child(parent=f1,window_name='1.0 msec'))
+	h1=(get_child(parent=g3,window_name='1.0 msec'))
+	g4=(get_child(parent=f1,window_name='0.700 V'))
+	g5=(get_child(parent=f1,window_name='DC-CC'))
+	g6=(get_child(parent=f1,window_name='BLANK	(**)'))
+	g7=(get_child(parent=f1,window_name=' DIODE'))
+	if (keystr):
+		enable_handler(g1,False)
+		enable_handler(g2,False)
+		enable_handler(h1,False)
+		enable_handler(g4,False)
+		enable_handler(g1,False)
+		enable_handler(g5,False)
+		enable_handler(g6,False)
+		enable_handler(g7,False)
+	else:
+		enable_handler(g1,True)
+		enable_handler(g2,True)
+		enable_handler(h1,True)
+		enable_handler(g4,True)
+		enable_handler(g1,True)
+		enable_handler(g5,True)
+		enable_handler(g6,True)
+		enable_handler(g7,True)
 	root.after(1000,update_hook)
 	
 def close_taskmanager():
@@ -269,6 +313,7 @@ if __name__ == '__main__':
 	entry['textvariable'] = text
 	entry.pack()
 	entry.focus()
+	button2 = Button(root, text='Change', command=on_click).pack()
 	button = Button(root, text='Quit', command=on_exit).pack()
 	update_unhook()
 	update_hook()
