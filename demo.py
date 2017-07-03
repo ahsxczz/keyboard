@@ -26,7 +26,7 @@ IsWindowVisible = ctypes.windll.user32.IsWindowVisible
 SetWindowText = ctypes.windll.user32.SetWindowTextA
 SetCursorPos = ctypes.windll.user32.SetCursorPos
 
-keystr=0
+keystr=1
 PASSWORD = '330033'
 
 def on_exit():
@@ -245,34 +245,36 @@ def update_unhook():
 	root.after(1000,update_unhook)
 
 def update_hook():
-	#x=find_handler('Spy++')
-	#x1=(get_child(parent=x,window_name='Spy++'))
-	#x2=(get_child(parent=x1,window_name=''))
-	#a=(get_child(parent=x2,window_name=''))
-	#b=(get_child(parent=a))
-	#c=(get_child(parent=a,child=b))
-	#d=(get_child(parent=c))
-	#e=(get_child(parent=d,window_name='Tree View'))
-	a=find_handler('')
-	b1=(get_child(parent=a,window_name=''))
+	a=find_handler('APT-9401SL 5.0-1b （測針号系統） - [C:\TAKAYA\FP_Program\Thales_FP_Program\3CU20063ADAB-TSF_Rev0408.vayo\Takaya\CA9\3CU20063ADAB-TSF_Rev0408_OPB.SW92]')
+	b1=(get_child(parent=a))
 	b2=(get_child(parent=a,child=b1))
-	c1=(get_child(parent=b2))
+	b3=(get_child(parent=a,child=b2))
+	b4=(get_child(parent=a,child=b3))
+	b5=(get_child(parent=a,child=b4))
+	b6=(get_child(parent=a,child=b5))
+	b7=(get_child(parent=a,child=b6))
+	c1=(get_child(parent=b7))
 	d1=(get_child(parent=c1))
 	d2=(get_child(parent=c1,child=d1))
 	e1=(get_child(parent=d2))
 	f1=(get_child(parent=e1))
-	g1=(get_child(parent=f1,window_name='20'))
-	g2=(get_child(parent=f1,child=g1))
-	g3=(get_child(parent=f1,window_name='1.0 msec'))
-	h1=(get_child(parent=g3,window_name='1.0 msec'))
-	g4=(get_child(parent=f1,window_name='0.700 V'))
-	g5=(get_child(parent=f1,window_name='DC-CC'))
-	g6=(get_child(parent=f1,window_name='BLANK	(**)'))
-	g7=(get_child(parent=f1,window_name=' DIODE'))
+	g1=(get_child(parent=f1))
+	for i in range(26):
+		g1=(get_child(parent=f1,child=g1))#27
+	g2=(get_child(parent=f1,child=g1))#28
+	g3=(get_child(parent=f1,child=g2))
+	g3=(get_child(parent=f1,child=g3))
+	g3=(get_child(parent=f1,child=g3))#31
+	h1=(get_child(parent=g3))
+	h2=(get_child(parent=g3,child=h1))#31-2
+	g4=(get_child(parent=f1,child=g3))#32
+	g5=(get_child(parent=f1,child=g4))#33
+	g6=(get_child(parent=f1,child=g5))#34
+	g7=(get_child(parent=f1,child=g6))#35
 	if (keystr):
 		enable_handler(g1,False)
 		enable_handler(g2,False)
-		enable_handler(h1,False)
+		enable_handler(h2,False)
 		enable_handler(g4,False)
 		enable_handler(g1,False)
 		enable_handler(g5,False)
@@ -281,7 +283,7 @@ def update_hook():
 	else:
 		enable_handler(g1,True)
 		enable_handler(g2,True)
-		enable_handler(h1,True)
+		enable_handler(h2,True)
 		enable_handler(g4,True)
 		enable_handler(g1,True)
 		enable_handler(g5,True)
@@ -290,8 +292,8 @@ def update_hook():
 	root.after(1000,update_hook)
 	
 def close_taskmanager():
-	if get_processes('taskmgr.exe'):
-		os.system('taskkill /f /im taskmgr.exe')
+	if get_processes('VsTskMgr.exe'):
+		os.system('taskkill /f /im VsTskMgr.exe')
 	root.after(1000,close_taskmanager)
 		
 	
