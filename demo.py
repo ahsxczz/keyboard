@@ -7,7 +7,7 @@ import os
 from Tkinter import Tk, Label, Entry, StringVar, Button
 import pythoncom
 import pyHook
-import psutil
+#import psutil
 import ctypes
 import win32gui
 import win32api
@@ -40,6 +40,7 @@ def on_exit():
 		
 def on_click():
 	global keystr
+	update_hook()
 	if text.get() == PASSWORD:
 		if keystr==0:
 			keystr=1
@@ -200,6 +201,27 @@ def click_button(hwnd):
     win32api.PostMessage(hwnd, win32con.WM_LBUTTONDOWN, 0, 0)
     win32api.PostMessage(hwnd, win32con.WM_LBUTTONUP, 0, 0)
 
+def get_all_handlers_hwnd(visible=True):
+    handlers_hwnd = []
+	
+    def foreach_window(hwnd, l_param):
+        if not visible or IsWindowVisible(hwnd):
+            handlers_hwnd.append((hwnd))
+        return True
+
+    EnumWindows(EnumWindowsProc(foreach_window), 0)
+    return handlers_hwnd
+
+def get_all_handlers_id(visible=True):
+    handlers_id = []
+	
+    def foreach_window(hwnd, l_param):
+        if not visible or IsWindowVisible(hwnd):
+            handlers_id.append((get_handler_text(hwnd)))
+        return True
+
+    EnumWindows(EnumWindowsProc(foreach_window), 0)
+    return handlers_id
 
 def is_enabled(hwnd):
     return win32gui.IsWindowEnabled(hwnd)
@@ -245,15 +267,16 @@ def update_unhook():
 	root.after(1000,update_unhook)
 
 def update_hook():
-	a=find_handler('APT-9401SL 5.0-1b （測針号系統） - [C:\TAKAYA\FP_Program\Thales_FP_Program\3CU20063ADAB-TSF_Rev0408.vayo\Takaya\CA9\3CU20063ADAB-TSF_Rev0408_OPB.SW92]')
+	x=get_all_handlers_id()
+	y=get_all_handlers_hwnd()
+	for i in range(100):
+		if x[i].startswith('APT-9401SL 5.0-1b'):
+			a=y[i]
+			break
 	b1=(get_child(parent=a))
-	b2=(get_child(parent=a,child=b1))
-	b3=(get_child(parent=a,child=b2))
-	b4=(get_child(parent=a,child=b3))
-	b5=(get_child(parent=a,child=b4))
-	b6=(get_child(parent=a,child=b5))
-	b7=(get_child(parent=a,child=b6))
-	c1=(get_child(parent=b7))
+	for i in range(6):
+		b1=(get_child(parent=a,child=b1))
+	c1=(get_child(parent=b1))
 	d1=(get_child(parent=c1))
 	d2=(get_child(parent=c1,child=d1))
 	e1=(get_child(parent=d2))
@@ -263,8 +286,8 @@ def update_hook():
 		g1=(get_child(parent=f1,child=g1))#27
 	g2=(get_child(parent=f1,child=g1))#28
 	g3=(get_child(parent=f1,child=g2))
-	g3=(get_child(parent=f1,child=g3))
-	g3=(get_child(parent=f1,child=g3))#31
+	for i in range(2):
+		g3=(get_child(parent=f1,child=g3))#31
 	h1=(get_child(parent=g3))
 	h2=(get_child(parent=g3,child=h1))#31-2
 	g4=(get_child(parent=f1,child=g3))#32
@@ -276,7 +299,6 @@ def update_hook():
 		enable_handler(g2,False)
 		enable_handler(h2,False)
 		enable_handler(g4,False)
-		enable_handler(g1,False)
 		enable_handler(g5,False)
 		enable_handler(g6,False)
 		enable_handler(g7,False)
@@ -285,17 +307,25 @@ def update_hook():
 		enable_handler(g2,True)
 		enable_handler(h2,True)
 		enable_handler(g4,True)
-		enable_handler(g1,True)
 		enable_handler(g5,True)
 		enable_handler(g6,True)
 		enable_handler(g7,True)
 	root.after(1000,update_hook)
 	
-def close_taskmanager():
-	if get_processes('VsTskMgr.exe'):
-		os.system('taskkill /f /im VsTskMgr.exe')
-	root.after(1000,close_taskmanager)
-		
+#def close_taskmanager():
+	#if get_processes('VsTskMgr.exe'):
+		#os.system('taskkill /f /im VsTskMgr.exe')
+	#root.after(1000,close_taskmanager)
+
+#def check_exsit(process_name):
+    #WMI = win32com.client.GetObject('winmgmts:')
+    #processCodeCov = WMI.ExecQuery('select * from Win32_Process where Name="%s"' % process_name)
+    #if len(processCodeCov) > 0:
+		#os.system('taskkill /f /im VsTskMgr.exe')
+
+def check_update():
+	check_exsit('VsTskMgr.exe')
+	root.after(1000,check_update)
 	
 if __name__ == '__main__':	
 	hm = pyHook.HookManager()
@@ -318,8 +348,8 @@ if __name__ == '__main__':
 	button2 = Button(root, text='Change', command=on_click).pack()
 	button = Button(root, text='Quit', command=on_exit).pack()
 	update_unhook()
-	update_hook()
-	close_taskmanager()
+	#close_taskmanager()
+	#check_update()
 	root.mainloop()  #消息循环
 	
 	pythoncom.PumpMessages()
