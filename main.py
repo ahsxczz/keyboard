@@ -18,7 +18,7 @@ folder_help = 'Folder or file path of Excel, default: H:\\TE\\Proyekto\\configs'
 level_help = 'Alert level, default: 3'
 level_maps_help = 'maps of level: days, default: 1:180,2:90,3:30'
 template_help = 'jinja2 template for rendering, default: templates\one_month.html'
-host_help = 'email server, default: localhost'
+host_help = 'email server, default: shateweb'
 sender_help = 'Sender address, name and email separated by $, default: \
 Validation Expiring Alert$validation_alert@jabil.com'
 date_format_help = 'date format, default: %d-%b-%Y'
@@ -43,7 +43,7 @@ debug_help = 'only for development, send email to developer only'
               help=level_maps_help)
 @click.option('--template', '-t', type=click.Path(exists=True),default='templates\one_month.html',
               help=template_help)
-@click.option('--host', '-h', default='localhost', help=host_help)
+@click.option('--host', '-h', default='shateweb', help=host_help)
 @click.option('--sender', '-s',
               default='Validation Expiring Alert$validation_alert@jabil.com',
               help=sender_help)
@@ -94,7 +94,7 @@ def run(folder, level, level_maps, template, host, sender, date_format,
     else:
         d = Path(folder)
         files = d.files('*.xls') + d.files('*.xlsx')
-	
+    
 
     for file_path in files:
         if file_path.namebase.startswith('~'):
@@ -103,7 +103,7 @@ def run(folder, level, level_maps, template, host, sender, date_format,
         if debug:
             click.echo('checking [{}]...'.format(file_path.name))
 
-        rows, headers, to_list,comment = parse_excel(file_path, *args)
+        rows, headers, to_list, comment, com_headers = parse_excel(file_path, *args)
         if rows is False:
             continue
 
@@ -139,18 +139,21 @@ def run(folder, level, level_maps, template, host, sender, date_format,
                           bcc=bcc)
         msg.send(to=to_list, smtp=dict(host=host),
                  render=dict(file_path=file_path, workcell=wc, headers=headers,
-                             fixtures=rows,fixtures2=comment))
+                             fixtures=rows))
+        msg.send(to=to_list, smtp=dict(host=host),
+                render=dict(file_path=file_path, workcell=wc, headers=com_headers,
+                            fixtures=comment))
 
 
 def get_days(next_date, today, level, level_days):
-    days = (next_date - today).days #+365*3
+    days = (next_date - today).days +365*3
     up_level = level + 1
     if up_level in level_days:
         if level_days[up_level] < days <= level_days[level]:
             return days
 	
     else:
-        if days <= level_days[level]:
+        if 0<days <= level_days[level]:
             return days
 
     return None
@@ -183,6 +186,7 @@ def parse_excel(file_path, today, level, level_days, keyword, date_format,
     headers = None
     to_list = []
     comment= []
+    com_headers = None
     try:
         wb = open_workbook(file_path)
         ws = wb.sheet_by_index(0)
@@ -230,7 +234,6 @@ def parse_excel(file_path, today, level, level_days, keyword, date_format,
                     rows.append(values)
                     # update updated row
                     all_rows[-1] = values
-				
             except:
                 if debug:
                     traceback.print_exc()
@@ -238,10 +241,59 @@ def parse_excel(file_path, today, level, level_days, keyword, date_format,
                 continue
 			
         ws = wb.sheet_by_index(2)
+        #for row in xrange(ws.nrows):
+            #values = ws.row_values(row)
+            #if values:
+				#comment.append(values)		
+        idx = None
+        all_rows = []
         for row in xrange(ws.nrows):
             values = ws.row_values(row)
-            if values:
-				comment.append(values)		
+            all_rows.append(values)
+            if idx is None:
+                i = get_index(values, keyword)
+                if i is not None:
+                    com_headers = values
+                    idx = i
+
+                continue
+
+            if len(values) <= idx:
+                continue
+
+            try:
+                if values[idx]:
+                    next_date = convert_to_date(values[idx])
+                    if not next_date:
+                        continue
+
+                else:
+                    continue
+
+                values[idx] = next_date.strftime(date_format)
+                for idx_ in dates_idx:
+                    if values[idx_]:
+                        v_date = convert_to_date(values[idx_])
+                        if v_date:
+                            values[idx_] = v_date.strftime(date_format)
+
+                for idx_ in combined_columns:
+                    if not values[idx_]:
+                        try:
+                            values[idx_] = all_rows[-2][idx_]
+                        except:
+                            pass
+
+                days = get_days(next_date, today, level, level_days)
+                #if days is not None:
+                comment.append(values)
+                # update updated row
+                all_rows[-1] = values
+            except:
+                if debug:
+                    traceback.print_exc()
+
+                continue
 		
         ws = wb.sheet_by_index(1)
         for row in xrange(ws.nrows):
@@ -250,15 +302,15 @@ def parse_excel(file_path, today, level, level_days, keyword, date_format,
                 for v in values:
                     email = ('{}'.format(v)).strip().replace('\xa0', '')
                     if email and '@' in email:
-                        to_list.append(email)
-        print (comment)
+                        to_list.append(email)	
+				
     except:
         if debug:
             traceback.print_exc()
 
         return False, None,  'Reading excel error: {}'.format(file_path)
-
-    return rows, headers, to_list,comment
+	
+    return rows, headers, to_list, comment, com_headers
 
 
 if __name__ == '__main__':
