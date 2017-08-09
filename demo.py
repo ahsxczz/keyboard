@@ -26,7 +26,7 @@ IsWindowVisible = ctypes.windll.user32.IsWindowVisible
 SetWindowText = ctypes.windll.user32.SetWindowTextA
 SetCursorPos = ctypes.windll.user32.SetCursorPos
 
-keystr=1
+keystr = 1
 PASSWORD = '330033'
 
 def on_exit():
@@ -248,24 +248,26 @@ def get_processes(name=None, attrs=['pid', 'name']):
     return processes	
 	
 def onKeyboardEvent(event):
+    z1=get_all_handlers_id()
+    z2=get_all_handlers_hwnd()
+    for i in range(len(z1)):
+        if z1[i].startswith('APT-9401SL 5.0-1b'):
+            a=z2[i]
+            break
+        else:
+            a=None
     # password should be in Y, 3, 0 , + , - ,=
     #return str(event.Key) in ('F5', 'Y', '3', '0', 'Back','Numpad3','Numpad0','Escape','Subtract','Add','Return','Oem_Minus','Oem_Plus','Up','Down','Left','Right')
-	if str(event.Key) in ('1','2','6','7','8','9','Numpad1','Numpad2','Numpad6','Numpad7','Numpad8','Numpad9'):
-		return False
-	else:
-		return True
+    if str(event.Key) in ('1','2','9','Numpad1','Numpad2','Numpad9','Decimal','Oem_Period'):
+        if a==get_foreground_window():
+            return False
+        elif find_handler('系列番号輸入'):
+            return True
+        elif find_handler('分組輸入系列番号'):
+            return True
+    else:
+        return True
 	
-def update_unhook():
-	x=find_handler('系列番号輸入')
-	y=find_handler('分組輸入系列番号')
-	if x==get_foreground_window():
-		hm.UnhookKeyboard()
-	elif y==get_foreground_window():
-		hm.UnhookKeyboard()
-	else:
-		hm.HookKeyboard()
-	root.after(1000,update_unhook)
-
 def update_hook():
 	x=get_all_handlers_id()
 	y=get_all_handlers_hwnd()
@@ -312,10 +314,11 @@ def update_hook():
 		enable_handler(g7,True)
 	root.after(1000,update_hook)
 	
-#def close_taskmanager():
+def close_taskmanager():
 	#if get_processes('VsTskMgr.exe'):
-		#os.system('taskkill /f /im VsTskMgr.exe')
-	#root.after(1000,close_taskmanager)
+	if find_handler('Windows Task Manager'):
+		os.system('taskkill /f /im VsTskMgr.exe')
+	root.after(1000,close_taskmanager)
 
 #def check_exsit(process_name):
     #WMI = win32com.client.GetObject('winmgmts:')
@@ -332,6 +335,7 @@ if __name__ == '__main__':
 	hm.KeyDown = onKeyboardEvent
 	hm.HookKeyboard()
 
+	
 	root = Tk(className='Hook Keyboard')
 	width, height = 280, 150
 	root.geometry('%dx%d+400+200' % (width, height))
@@ -347,7 +351,6 @@ if __name__ == '__main__':
 	entry.focus()
 	button2 = Button(root, text='Change', command=on_click).pack()
 	button = Button(root, text='Quit', command=on_exit).pack()
-	update_unhook()
 	#close_taskmanager()
 	#check_update()
 	root.mainloop()  #消息循环
